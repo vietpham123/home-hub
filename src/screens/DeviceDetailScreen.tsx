@@ -11,7 +11,7 @@ import Slider from '@react-native-community/slider';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDeviceStore } from '../store/DeviceContext';
-import { RootStackParamList, AnyDevice, Light, Thermostat, Blinds, Lock, Camera } from '../types';
+import { RootStackParamList, AnyDevice, Light, Plug, Thermostat, Blinds, Lock, Camera } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { useMqttDevice, useMqttConnection } from '../hooks/useMqtt';
 
@@ -66,6 +66,8 @@ function getDeviceIcon(device: AnyDevice): string {
   switch (device.type) {
     case 'light':
       return device.isOn ? 'lightbulb-on' : 'lightbulb-outline';
+    case 'plug':
+      return device.isOn ? 'power-plug' : 'power-plug-off';
     case 'thermostat':
       return 'thermometer';
     case 'lock':
@@ -85,6 +87,8 @@ function DeviceControls({ device }: { device: AnyDevice }) {
   switch (device.type) {
     case 'light':
       return <LightControls device={device} />;
+    case 'plug':
+      return <PlugControls device={device} />;
     case 'thermostat':
       return <ThermostatControls device={device} />;
     case 'lock':
@@ -178,6 +182,50 @@ function LightControls({ device }: { device: Light }) {
           </View>
         </ControlRow>
       )}
+    </View>
+  );
+}
+
+function PlugControls({ device }: { device: Plug }) {
+  const isMqttDevice = device.source === 'gosund' || device.source === 'mqtt';
+  const mqttDeviceId = device.gosundDeviceId ?? device.id;
+
+  const mqtt = useMqttDevice(mqttDeviceId, { isOn: device.isOn });
+  const mqttConnected = useMqttConnection();
+
+  const [localIsOn, setLocalIsOn] = useState(device.isOn);
+  const isOn = isMqttDevice && mqttConnected ? mqtt.state.isOn : localIsOn;
+
+  function handleToggle() {
+    if (isMqttDevice && mqttConnected) {
+      mqtt.sendCommand({ isOn: !isOn });
+    } else {
+      setLocalIsOn(!localIsOn);
+    }
+  }
+
+  return (
+    <View>
+      {isMqttDevice && (
+        <View style={[styles.mqttBadge, mqttConnected ? styles.mqttOnline : styles.mqttOffline]}>
+          <MaterialCommunityIcons
+            name={mqttConnected ? 'access-point-network' : 'access-point-network-off'}
+            size={16}
+            color={mqttConnected ? colors.success : colors.textSecondary}
+          />
+          <Text style={[styles.mqttBadgeText, mqttConnected && { color: colors.success }]}>
+            {mqttConnected ? 'MQTT Connected — Live Control' : 'MQTT Offline — Local Only'}
+          </Text>
+        </View>
+      )}
+      <ControlRow label="Power">
+        <ToggleButton
+          isOn={isOn}
+          onToggle={handleToggle}
+          labelOn="ON"
+          labelOff="OFF"
+        />
+      </ControlRow>
     </View>
   );
 }

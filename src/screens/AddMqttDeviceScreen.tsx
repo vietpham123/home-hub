@@ -11,13 +11,14 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDeviceStore } from '../store/DeviceContext';
-import { RootStackParamList, DeviceType, Light, Thermostat, Lock, Camera, Blinds, Sensor, AnyDevice } from '../types';
+import { RootStackParamList, DeviceType, Light, Plug, Thermostat, Lock, Camera, Blinds, Sensor, AnyDevice } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddMqttDevice'>;
 
 const DEVICE_TYPES: { type: DeviceType; label: string; icon: string }[] = [
   { type: 'light', label: 'Light', icon: 'lightbulb-on' },
+  { type: 'plug', label: 'Smart Plug', icon: 'power-plug' },
   { type: 'thermostat', label: 'Thermostat', icon: 'thermometer' },
   { type: 'lock', label: 'Lock', icon: 'lock' },
   { type: 'camera', label: 'Camera', icon: 'cctv' },
@@ -26,11 +27,30 @@ const DEVICE_TYPES: { type: DeviceType; label: string; icon: string }[] = [
 ];
 
 export default function AddMqttDeviceScreen({ navigation }: Props) {
-  const { rooms, addDeviceToRoom } = useDeviceStore();
+  const { rooms, addDeviceToRoom, addRoom } = useDeviceStore();
   const [name, setName] = useState('');
   const [mqttId, setMqttId] = useState('');
   const [selectedType, setSelectedType] = useState<DeviceType>('light');
   const [selectedRoom, setSelectedRoom] = useState(rooms[0]?.id ?? '');
+  const [newRoomName, setNewRoomName] = useState('');
+  const [showNewRoom, setShowNewRoom] = useState(false);
+
+  function handleCreateRoom() {
+    const trimmed = newRoomName.trim();
+    if (!trimmed) {
+      Alert.alert('Error', 'Enter a room name.');
+      return;
+    }
+    const roomId = trimmed.toLowerCase().replace(/\s+/g, '-');
+    if (rooms.find(r => r.id === roomId)) {
+      Alert.alert('Error', 'A room with that name already exists.');
+      return;
+    }
+    addRoom({ id: roomId, name: trimmed, icon: 'door', devices: [] });
+    setSelectedRoom(roomId);
+    setNewRoomName('');
+    setShowNewRoom(false);
+  }
 
   function handleAdd() {
     const trimName = name.trim();
@@ -65,6 +85,9 @@ export default function AddMqttDeviceScreen({ navigation }: Props) {
     switch (selectedType) {
       case 'light':
         device = { ...base, type: 'light', isOn: false, brightness: 100, color: '#FFFFFF' } as Light;
+        break;
+      case 'plug':
+        device = { ...base, type: 'plug', isOn: false } as Plug;
         break;
       case 'thermostat':
         device = { ...base, type: 'thermostat', currentTemp: 20, targetTemp: 22, mode: 'auto' } as Thermostat;
@@ -172,7 +195,29 @@ export default function AddMqttDeviceScreen({ navigation }: Props) {
             </Text>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity
+          style={[styles.roomChip, { borderStyle: 'dashed' }]}
+          onPress={() => setShowNewRoom(!showNewRoom)}
+        >
+          <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
+          <Text style={[styles.roomChipText, { color: colors.primary }]}>New Room</Text>
+        </TouchableOpacity>
       </View>
+
+      {showNewRoom && (
+        <View style={styles.newRoomRow}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="Room name (e.g. Living Room)"
+            placeholderTextColor={colors.textSecondary}
+            value={newRoomName}
+            onChangeText={setNewRoomName}
+          />
+          <TouchableOpacity style={styles.newRoomBtn} onPress={handleCreateRoom}>
+            <MaterialCommunityIcons name="check" size={22} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Add Button */}
       <TouchableOpacity style={styles.addBtn} onPress={handleAdd}>
@@ -304,5 +349,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: spacing.sm,
     fontSize: 16,
+  },
+  newRoomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    gap: spacing.sm,
+  },
+  newRoomBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

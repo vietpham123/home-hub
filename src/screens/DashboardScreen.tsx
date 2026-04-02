@@ -57,49 +57,76 @@ export default function DashboardScreen({ navigation }: Props) {
       </View>
 
       {/* Quick Stats */}
-      <View style={styles.statsRow}>
-        <StatCard
-          icon="lightbulb-on"
-          label="Lights On"
-          value={String(allDevices.filter((d) => d.type === 'light' && d.isOnline && d.isOn).length)}
-          color={colors.accent}
-        />
-        <StatCard
-          icon="lock"
-          label="Doors Locked"
-          value={String(allDevices.filter((d) => d.type === 'lock' && d.isOnline && d.isLocked).length)}
-          color={colors.success}
-        />
-        <StatCard
-          icon="cctv"
-          label="Cameras"
-          value={String(allDevices.filter((d) => d.type === 'camera' && d.isOnline && d.isRecording).length)}
-          color={colors.danger}
-        />
-      </View>
+      {allDevices.length > 0 ? (
+        <>
+          <View style={styles.statsRow}>
+            <StatCard
+              icon="lightbulb-on"
+              label="Lights On"
+              value={String(allDevices.filter((d) => d.type === 'light' && d.isOnline && d.isOn).length)}
+              color={colors.accent}
+            />
+            <StatCard
+              icon="power-plug"
+              label="Plugs On"
+              value={String(allDevices.filter((d) => d.type === 'plug' && d.isOnline && d.isOn).length)}
+              color={colors.success}
+            />
+            <StatCard
+              icon="lock"
+              label="Locked"
+              value={String(allDevices.filter((d) => d.type === 'lock' && d.isOnline && d.isLocked).length)}
+              color={colors.success}
+            />
+          </View>
 
-      {/* Sensors */}
-      <Text style={styles.sectionTitle}>Sensors</Text>
-      {sensors.slice(0, 4).map((sensor) => (
-        <SensorWidget key={sensor.id} sensor={sensor} />
-      ))}
+          {/* Sensors */}
+          {sensors.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Sensors</Text>
+              {sensors.slice(0, 4).map((sensor) => (
+                <SensorWidget key={sensor.id} sensor={sensor} />
+              ))}
+            </>
+          )}
 
-      {/* Devices */}
-      <Text style={styles.sectionTitle}>Active Devices</Text>
-      <View style={styles.devicesGrid}>
-        {favoriteDevices.slice(0, 6).map((device) => (
-          <DeviceCard
-            key={device.id}
-            device={device}
-            onPress={() =>
-              navigation.navigate('DeviceDetail', {
-                deviceId: device.id,
-                roomId: device.roomId,
-              })
-            }
-          />
-        ))}
-      </View>
+          {/* Devices */}
+          {favoriteDevices.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Active Devices</Text>
+              <View style={styles.devicesGrid}>
+                {favoriteDevices.slice(0, 6).map((device) => (
+                  <DeviceCard
+                    key={device.id}
+                    device={device}
+                    onPress={() =>
+                      navigation.navigate('DeviceDetail', {
+                        deviceId: device.id,
+                        roomId: device.roomId,
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            </>
+          )}
+        </>
+      ) : (
+        <View style={styles.emptyState}>
+          <MaterialCommunityIcons name="home-plus" size={80} color={colors.textSecondary} />
+          <Text style={styles.emptyTitle}>No Devices Yet</Text>
+          <Text style={styles.emptyText}>
+            Go to Settings → Add MQTT Device to add your smart devices.
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyBtn}
+            onPress={() => navigation.getParent()?.navigate('Settings')}
+          >
+            <MaterialCommunityIcons name="cog" size={20} color={colors.text} />
+            <Text style={styles.emptyBtnText}>Go to Settings</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -186,5 +213,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl * 2,
+  },
+  emptyTitle: {
+    ...typography.h2,
+    color: colors.text,
+    marginTop: spacing.lg,
+  },
+  emptyText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    lineHeight: 22,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  emptyBtnText: {
+    ...typography.body,
+    color: colors.text,
+    fontWeight: '600',
+    marginLeft: spacing.sm,
   },
 });

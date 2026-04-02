@@ -1,5 +1,6 @@
 export type DeviceType =
   | 'light'
+  | 'plug'
   | 'thermostat'
   | 'lock'
   | 'camera'
@@ -22,6 +23,13 @@ export interface Light extends Device {
   isOn: boolean;
   brightness: number; // 0–100
   color?: string; // hex
+  source?: 'mock' | 'gosund' | 'mqtt';
+  gosundDeviceId?: string;
+}
+
+export interface Plug extends Device {
+  type: 'plug';
+  isOn: boolean;
   source?: 'mock' | 'gosund' | 'mqtt';
   gosundDeviceId?: string;
 }
@@ -56,7 +64,7 @@ export interface Sensor extends Device {
   unit: string;
 }
 
-export type AnyDevice = Light | Thermostat | Lock | Camera | Blinds | Sensor;
+export type AnyDevice = Light | Plug | Thermostat | Lock | Camera | Blinds | Sensor;
 
 export interface Room {
   id: string;

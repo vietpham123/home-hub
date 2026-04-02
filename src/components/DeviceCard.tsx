@@ -17,6 +17,8 @@ function getStatusText(device: AnyDevice): string {
       return device.isOn ? `On · ${device.brightness}%` : 'Off';
     case 'thermostat':
       return `${device.currentTemp}°C → ${device.targetTemp}°C`;
+    case 'plug':
+      return device.isOn ? 'On' : 'Off';
     case 'lock':
       return device.isLocked ? 'Locked' : 'Unlocked';
     case 'camera':
