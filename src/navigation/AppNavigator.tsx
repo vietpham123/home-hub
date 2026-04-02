@@ -14,6 +14,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import GosundSetupScreen from '../screens/GosundSetupScreen';
 import GosundDiscoveryScreen from '../screens/GosundDiscoveryScreen';
 import MqttConfigScreen from '../screens/MqttConfigScreen';
+import AddMqttDeviceScreen from '../screens/AddMqttDeviceScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -120,6 +121,11 @@ export default function AppNavigator() {
           name="MqttConfig"
           component={MqttConfigScreen}
           options={{ title: 'MQTT Broker' }}
+        />
+        <Stack.Screen
+          name="AddMqttDevice"
+          component={AddMqttDeviceScreen}
+          options={{ title: 'Add MQTT Device' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

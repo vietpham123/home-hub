@@ -72,6 +72,7 @@ export type RootStackParamList = {
   GosundSetup: undefined;
   GosundDiscovery: undefined;
   MqttConfig: undefined;
+  AddMqttDevice: undefined;
 };
 
 export type MainTabParamList = {

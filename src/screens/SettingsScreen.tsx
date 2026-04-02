@@ -52,6 +52,12 @@ export default function SettingsScreen() {
           onPress={() => navigation.navigate('MqttConfig')}
         />
         <SettingRow
+          icon="plus-network"
+          label="Add MQTT Device"
+          value=""
+          onPress={() => navigation.navigate('AddMqttDevice')}
+        />
+        <SettingRow
           icon="wifi"
           label="Network"
           value="Connected"
