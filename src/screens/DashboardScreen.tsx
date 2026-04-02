@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { rooms, getAllDevices } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList, AnyDevice, Sensor } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import DeviceCard from '../components/DeviceCard';
@@ -21,7 +21,8 @@ type Props = {
 
 export default function DashboardScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
-  const allDevices = getAllDevices();
+  const { allDevices: allDevicesList, refresh } = useDeviceStore();
+  const allDevices = allDevicesList;
   const onlineDevices = allDevices.filter((d) => d.isOnline);
   const sensors = allDevices.filter((d): d is Sensor => d.type === 'sensor');
   const favoriteDevices = allDevices.filter(
@@ -30,6 +31,7 @@ export default function DashboardScreen({ navigation }: Props) {
 
   const onRefresh = () => {
     setRefreshing(true);
+    refresh();
     setTimeout(() => setRefreshing(false), 1000);
   };
 

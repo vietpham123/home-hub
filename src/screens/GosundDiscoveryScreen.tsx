@@ -11,7 +11,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { gosundService, TuyaDeviceRaw } from '../services/gosundService';
-import { rooms } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
@@ -36,6 +36,7 @@ export default function GosundDiscoveryScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addedDevices, setAddedDevices] = useState<Set<string>>(new Set());
+  const { rooms, addDeviceToRoom } = useDeviceStore();
 
   useEffect(() => {
     discoverDevices();
@@ -76,7 +77,7 @@ export default function GosundDiscoveryScreen({ navigation }: Props) {
       text: r.name,
       onPress: () => {
         const light = gosundService.tuyaDeviceToLight(device, r.id);
-        r.devices.push(light);
+        addDeviceToRoom(light, r.id);
         setAddedDevices((prev) => new Set(prev).add(device.id));
         Alert.alert('Added', `${device.name} added to ${r.name}`);
       },

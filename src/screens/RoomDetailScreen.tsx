@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { getRoomById } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList, Sensor } from '../types';
 import { colors, spacing, typography } from '../theme';
 import DeviceCard from '../components/DeviceCard';
@@ -10,6 +10,7 @@ import SensorWidget from '../components/SensorWidget';
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomDetail'>;
 
 export default function RoomDetailScreen({ route, navigation }: Props) {
+  const { getRoomById } = useDeviceStore();
   const room = getRoomById(route.params.roomId);
 
   if (!room) {

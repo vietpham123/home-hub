@@ -10,7 +10,7 @@ import {
 import Slider from '@react-native-community/slider';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { getDeviceById, getRoomById } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList, AnyDevice, Light, Thermostat, Blinds, Lock, Camera } from '../types';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { useMqttDevice, useMqttConnection } from '../hooks/useMqtt';
@@ -18,6 +18,7 @@ import { useMqttDevice, useMqttConnection } from '../hooks/useMqtt';
 type Props = NativeStackScreenProps<RootStackParamList, 'DeviceDetail'>;
 
 export default function DeviceDetailScreen({ route }: Props) {
+  const { getDeviceById, getRoomById } = useDeviceStore();
   const device = getDeviceById(route.params.deviceId);
   const room = getRoomById(route.params.roomId);
 

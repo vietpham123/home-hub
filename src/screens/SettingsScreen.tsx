@@ -12,11 +12,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { getAllDevices, rooms } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList } from '../types';
 
 export default function SettingsScreen() {
-  const allDevices = getAllDevices();
+  const { allDevices, rooms } = useDeviceStore();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (

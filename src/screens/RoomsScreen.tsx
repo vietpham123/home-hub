@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { rooms } from '../data/mockData';
+import { useDeviceStore } from '../store/DeviceContext';
 import { RootStackParamList } from '../types';
 import { colors, spacing, typography } from '../theme';
 import RoomCard from '../components/RoomCard';
@@ -11,6 +11,7 @@ type Props = {
 };
 
 export default function RoomsScreen({ navigation }: Props) {
+  const { rooms } = useDeviceStore();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Rooms</Text>
