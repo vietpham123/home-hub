@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Room, AnyDevice } from '../types';
-import { rooms as mockRooms } from '../data/mockData';
 
 const STORAGE_KEY = '@smarthouse_rooms';
 
@@ -27,10 +26,10 @@ export function useDeviceStore(): DeviceStore {
 }
 
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Load persisted discovered devices on mount
+  // Load persisted devices on mount
   useEffect(() => {
     loadPersistedDevices();
   }, []);
@@ -40,24 +39,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
         const savedRooms: Room[] = JSON.parse(stored);
-        // Merge: start with mock rooms, add any discovered devices
-        const merged = [...mockRooms.map(r => ({ ...r, devices: [...r.devices] }))];
-        
-        for (const savedRoom of savedRooms) {
-          const existingRoom = merged.find(r => r.id === savedRoom.id);
-          if (existingRoom) {
-            // Add saved devices that aren't already in mock data
-            for (const device of savedRoom.devices) {
-              if (!existingRoom.devices.find(d => d.id === device.id)) {
-                existingRoom.devices.push(device);
-              }
-            }
-          } else {
-            // It's a custom room not in mock data
-            merged.push(savedRoom);
-          }
-        }
-        setRooms(merged);
+        setRooms(savedRooms);
       }
     } catch (e) {
       console.warn('Failed to load persisted devices:', e);
@@ -65,26 +47,9 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     setLoaded(true);
   }
 
-  // Persist only non-mock devices (discovered/added ones)
   async function persistRooms(updatedRooms: Room[]) {
     try {
-      const mockDeviceIds = new Set(
-        mockRooms.flatMap(r => r.devices.map(d => d.id))
-      );
-      const mockRoomIds = new Set(mockRooms.map(r => r.id));
-
-      // Save rooms that have non-mock devices, or are custom rooms
-      const toSave: Room[] = [];
-      for (const room of updatedRooms) {
-        const nonMockDevices = room.devices.filter(d => !mockDeviceIds.has(d.id));
-        if (nonMockDevices.length > 0 || !mockRoomIds.has(room.id)) {
-          toSave.push({
-            ...room,
-            devices: mockRoomIds.has(room.id) ? nonMockDevices : room.devices,
-          });
-        }
-      }
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRooms));
     } catch (e) {
       console.warn('Failed to persist devices:', e);
     }
@@ -92,14 +57,20 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
 
   const addDeviceToRoom = useCallback((device: AnyDevice, roomId: string) => {
     setRooms(prev => {
+      let found = false;
       const updated = prev.map(room => {
         if (room.id === roomId) {
+          found = true;
           // Don't add duplicates
           if (room.devices.find(d => d.id === device.id)) return room;
           return { ...room, devices: [...room.devices, device] };
         }
         return room;
       });
+      // If room doesn't exist yet, create it with the device
+      if (!found) {
+        updated.push({ id: roomId, name: roomId, icon: 'door', devices: [device] });
+      }
       persistRooms(updated);
       return updated;
     });
