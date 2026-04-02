@@ -253,14 +253,30 @@ mqttClient.on('message', (topic, message) => {
 
   try {
     const command = JSON.parse(message.toString());
-    debug(`Command for ${entry.config.name}:`, command);
+    log(`Command for ${entry.config.name}:`, JSON.stringify(command));
 
     const dps = commandToDps(entry.config, command);
-    if (Object.keys(dps).length > 0) {
-      entry.tuya.set({ multiple: true, data: dps }).then(() => {
-        debug(`Command sent to ${entry.config.name}`);
+    const dpsKeys = Object.keys(dps);
+    if (dpsKeys.length === 0) {
+      log(`No DPS mapping for command:`, JSON.stringify(command));
+      return;
+    }
+
+    log(`Setting DPS for ${entry.config.name}:`, JSON.stringify(dps));
+
+    // Use individual set for single DPS (more reliable on 3.4+ firmware)
+    if (dpsKeys.length === 1) {
+      const dpsKey = dpsKeys[0];
+      entry.tuya.set({ dps: dpsKey, set: dps[dpsKey] }).then(() => {
+        log(`Command sent to ${entry.config.name}: DPS ${dpsKey} = ${dps[dpsKey]}`);
       }).catch((err) => {
         log(`Failed to send command to ${entry.config.name}:`, err.message);
+      });
+    } else {
+      entry.tuya.set({ multiple: true, data: dps }).then(() => {
+        log(`Multi-DPS command sent to ${entry.config.name}`);
+      }).catch((err) => {
+        log(`Failed to send multi-DPS command to ${entry.config.name}:`, err.message);
       });
     }
   } catch (err) {
