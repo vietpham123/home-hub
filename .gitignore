@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Bridge secrets (contains device keys)
+bridge/config.json
+
 # typescript
 *.tsbuildinfo
 

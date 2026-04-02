@@ -1,0 +1,30 @@
+{
+  "mqtt": {
+    "host": "192.168.1.100",
+    "port": 1883,
+    "username": "",
+    "password": ""
+  },
+  "devices": [
+    {
+      "id": "gosund-bulb-1",
+      "name": "Living Room Bulb",
+      "type": "light",
+      "tuyaId": "YOUR_TUYA_DEVICE_ID",
+      "tuyaKey": "YOUR_TUYA_LOCAL_KEY",
+      "ip": "",
+      "version": "3.3",
+      "roomId": "living-room"
+    },
+    {
+      "id": "gosund-plug-1",
+      "name": "Smart Plug",
+      "type": "plug",
+      "tuyaId": "YOUR_TUYA_DEVICE_ID",
+      "tuyaKey": "YOUR_TUYA_LOCAL_KEY",
+      "ip": "",
+      "version": "3.3",
+      "roomId": "living-room"
+    }
+  ]
+}
