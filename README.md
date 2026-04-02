@@ -8,12 +8,14 @@ A React Native smart home management app with a local Tuya/Gosund MQTT bridge fo
 
 ## Features
 
-- **Dashboard** — Overview of all devices, sensors, and quick stats
-- **Room Management** — Organize devices by room with per-room controls
-- **Device Control** — Lights (brightness, color), thermostats, locks, cameras, blinds, sensors
-- **Gosund / Tuya Integration** — Connect Gosund smart bulbs via Tuya Cloud API
+- **Dashboard** — Overview of all devices, sensors, and quick stats (empty state when starting fresh)
+- **Room Management** — Create rooms on the fly, organize devices by room
+- **Device Control** — Lights (brightness, color), smart plugs, thermostats, locks, cameras, blinds, sensors
+- **Add MQTT Devices** — Manually add any device by MQTT topic — no cloud account required
+- **Gosund / Tuya Integration** — Optionally connect Gosund smart devices via Tuya Cloud API
 - **Local MQTT Bridge** — Control devices locally over your network without cloud dependency
 - **Real-time Updates** — Live device state via WebSocket MQTT connection
+- **Persistent Storage** — Devices and rooms saved locally, survive app restarts
 - **Dark Theme** — Purpose-built dark UI for smart home control
 
 ### Supported Devices
@@ -21,6 +23,7 @@ A React Native smart home management app with a local Tuya/Gosund MQTT bridge fo
 | Type | Features |
 |------|----------|
 | Lights | On/off, brightness, color temperature, HSV color |
+| Smart Plugs | On/off toggle with MQTT live control |
 | Thermostat | Current/target temperature, mode (heat/cool/auto/off) |
 | Door Locks | Lock/unlock |
 | Cameras | Recording toggle, live preview placeholder |
@@ -52,7 +55,7 @@ A React Native smart home management app with a local Tuya/Gosund MQTT bridge fo
 
 ```
 Smarthouse/
-├── App.tsx                         # App entry point
+├── App.tsx                         # App entry point (wraps DeviceProvider)
 ├── index.ts                        # Expo root component registration
 ├── app.json                        # Expo configuration
 ├── package.json
@@ -63,23 +66,26 @@ Smarthouse/
 │   │   ├── RoomCard.tsx            # Room summary card
 │   │   └── SensorWidget.tsx        # Sensor reading display
 │   ├── data/
-│   │   └── mockData.ts            # Mock devices for 5 rooms
+│   │   └── mockData.ts            # Base data (starts empty, devices added via app)
 │   ├── hooks/
 │   │   └── useMqtt.ts             # React hooks for MQTT state & commands
 │   ├── navigation/
 │   │   └── AppNavigator.tsx        # Tab + stack navigation
 │   ├── screens/
-│   │   ├── DashboardScreen.tsx     # Home overview
+│   │   ├── DashboardScreen.tsx     # Home overview (empty state + device grid)
 │   │   ├── RoomsScreen.tsx         # Room list
 │   │   ├── RoomDetailScreen.tsx    # Devices in a room
-│   │   ├── DeviceDetailScreen.tsx  # Per-device controls
-│   │   ├── SettingsScreen.tsx      # App settings
-│   │   ├── GosundSetupScreen.tsx   # Tuya API credentials
-│   │   ├── GosundDiscoveryScreen.tsx # Discover Gosund devices
+│   │   ├── DeviceDetailScreen.tsx  # Per-device controls (light, plug, thermostat, etc.)
+│   │   ├── SettingsScreen.tsx      # App settings & integrations
+│   │   ├── AddMqttDeviceScreen.tsx # Add devices manually by MQTT topic
+│   │   ├── GosundSetupScreen.tsx   # Tuya API credentials (optional)
+│   │   ├── GosundDiscoveryScreen.tsx # Discover Gosund devices (optional)
 │   │   └── MqttConfigScreen.tsx    # MQTT broker configuration
 │   ├── services/
 │   │   ├── mqttService.ts          # WebSocket MQTT 3.1.1 client
 │   │   └── gosundService.ts        # Tuya Cloud API client
+│   ├── store/
+│   │   └── DeviceContext.tsx       # React Context store with AsyncStorage persistence
 │   ├── theme/
 │   │   └── index.ts                # Colors, spacing, typography
 │   ├── types/
@@ -335,14 +341,17 @@ Then enter the same credentials in the app under **Settings → MQTT Broker**.
 ## Connect the App
 
 1. Open the Smarthouse app
-2. Go to **Settings → MQTT Broker**
-3. Enter:
+2. **Add your first device**: Settings → **Add MQTT Device**
+   - Enter a name, MQTT device ID, device type, and create a room
+   - No cloud account needed — just your MQTT broker
+3. **Configure MQTT**: Settings → **MQTT Broker**
    - **Host**: your Ubuntu server's IP (e.g. `192.168.1.100`)
    - **WebSocket Port**: `9001`
    - **Username/Password** (if auth is enabled)
-4. Tap **Connect**
+   - Tap **Connect**
+4. **(Optional)** Connect Gosund devices via Tuya Cloud: Settings → **Gosund / Tuya**
 
-The connection status banner shows green when connected. Device controls will now send commands through the MQTT bridge to your Gosund devices.
+The connection status banner shows green when connected. Device controls will now send commands through the MQTT bridge to your devices.
 
 ## MQTT Topic Reference
 
